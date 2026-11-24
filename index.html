@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>每秒收入機 · 打工仔心靈慰藉</title>
+<style>
+  :root{
+    --gold:#ffd166;
+    --gold-2:#ffab00;
+    --mint:#7ef0c4;
+    --pink:#ff8fb1;
+    --text:#eaf0ff;
+    --muted:#8b96ad;
+    --stroke:rgba(255,255,255,.09);
+    --card:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.02));
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang HK","Noto Sans HK","Hiragino Sans","Microsoft JhengHei","Segoe UI",sans-serif;
+    color:var(--text);
+    background:#06080f;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ===== 背景光暈 ===== */
+  .aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(70px);opacity:.65}
+  .aurora span{position:absolute;display:block;border-radius:50%}
+  .a1{width:60vmax;height:60vmax;left:-15vmax;top:-25vmax;background:radial-gradient(circle,rgba(255,176,32,.30),transparent 62%);animation:float1 18s ease-in-out infinite}
+  .a2{width:55vmax;height:55vmax;right:-18vmax;top:8vmax;background:radial-gradient(circle,rgba(94,234,212,.20),transparent 62%);animation:float2 22s ease-in-out infinite}
+  .a3{width:48vmax;height:48vmax;left:12vmax;bottom:-22vmax;background:radial-gradient(circle,rgba(167,139,250,.20),transparent 62%);animation:float3 26s ease-in-out infinite}
+  @keyframes float1{50%{transform:translate3d(6vmax,4vmax,0) scale(1.12)}}
+  @keyframes float2{50%{transform:translate3d(-5vmax,6vmax,0) scale(1.08)}}
+  @keyframes float3{50%{transform:translate3d(4vmax,-6vmax,0) scale(1.15)}}
+  body::after{
+    content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(1100px 700px at 50% -15%,#131e33 0%,#0a0e1a 45%,#05070d 100%);
+    opacity:.55;
+  }
+
+  .app{position:relative;z-index:2;max-width:540px;margin:0 auto;padding:26px 16px 46px}
+
+  /* ===== 標題 ===== */
+  header{text-align:center;margin-bottom:18px}
+  h1{
+    margin:0 0 6px;font-size:clamp(19px,5.4vw,24px);font-weight:800;letter-spacing:.5px;
+    background:linear-gradient(100deg,#fff 10%,var(--gold) 45%,#fff 62%,var(--gold-2) 88%);
+    background-size:220% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shine 6s linear infinite;
+  }
+  @keyframes shine{to{background-position:220% 0}}
+  .sub{margin:0;font-size:12.5px;color:var(--muted);letter-spacing:.3px}
+
+  .card{
+    background:var(--card);border:1px solid var(--stroke);border-radius:20px;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    box-shadow:0 18px 40px -22px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+
+  /* ===== 輸入 ===== */
+  .inputs{padding:15px 15px 13px;margin-bottom:14px}
+  .inputs h2{
+    margin:0 0 11px;font-size:11px;font-weight:700;letter-spacing:1.6px;color:var(--muted);text-transform:uppercase;
+    display:flex;align-items:center;gap:7px;
+  }
+  .inputs h2::before{content:"";width:16px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--gold),transparent)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:11.5px;color:var(--muted);letter-spacing:.3px}
+  .inputwrap{position:relative;display:flex;align-items:center}
+  .inputwrap .pre{position:absolute;left:11px;font-size:13px;color:var(--muted);pointer-events:none}
+  .inputwrap .post{position:absolute;right:11px;font-size:11.5px;color:var(--muted);pointer-events:none}
+  input[type="number"],input[type="time"]{
+    width:100%;padding:11px 12px;font-size:15px;font-weight:600;color:var(--text);
+    background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);
+    border-radius:12px;outline:none;font-variant-numeric:tabular-nums;
+    transition:border-color .2s,box-shadow .2s,background .2s;
+    font-family:inherit;
+  }
+  .inputwrap .pre + input{padding-left:26px}
+  input:focus{border-color:rgba(255,209,102,.6);box-shadow:0 0 0 3px rgba(255,209,102,.13);background:rgba(255,255,255,.07)}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(.6);cursor:pointer}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .chip{
+    font:inherit;font-size:11.5px;font-weight:600;color:#c9d3e6;cursor:pointer;
+    padding:5px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.04);transition:.18s;
+  }
+  .chip:hover{color:#fff;border-color:rgba(255,209,102,.55);background:rgba(255,209,102,.1)}
+  .chip:active{transform:scale(.95)}
+
+  .hint{margin:10px 0 0;font-size:11px;color:var(--muted);line-height:1.6}
+  .hint b{color:var(--gold);font-weight:700}
+
+  /* ===== 主角數字 ===== */
+  .hero{position:relative;overflow:hidden;padding:20px 16px 16px;margin-bottom:14px}
+  #fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .hero-in{position:relative;z-index:2}
+  .hero-label{
+    text-align:center;font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint);animation:blink 1.6s ease-in-out infinite}
+  .dot.paused{background:var(--muted);box-shadow:none;animation:none}
+  @keyframes blink{50%{opacity:.25}}
+
+  .digits{
+    text-align:center;font-variant-numeric:tabular-nums;line-height:1.05;
+    font-size:clamp(42px,14vw,68px);font-weight:800;letter-spacing:-1px;
+    cursor:pointer;user-select:none;padding:4px 0 2px;
+    transition:transform .12s ease-out;
+  }
+  .digits .cur{font-size:.5em;vertical-align:.42em;opacity:.75;margin-right:1px}
+  .digits .int{
+    background:linear-gradient(180deg,#fff 5%,#ffe9ad 55%,#ffc247 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 34px rgba(255,193,71,.28);
+  }
+  .digits .dec{font-size:.44em;font-weight:700;color:var(--mint);opacity:.95;vertical-align:.95em;letter-spacing:0;margin-left:2px}
+  .digits .dec2{font-size:.28em;font-weight:700;color:var(--mint);opacity:.45;vertical-align:1.55em;letter-spacing:0}
+  .digits.beat{animation:beat .5s ease-out}
+  @keyframes beat{0%{transform:scale(1)}22%{transform:scale(1.035)}100%{transform:scale(1)}}
+
+  .secbar{height:3px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin:4px auto 12px;max-width:230px}
+  .secbar i{display:block;height:100%;width:100%;transform-origin:left center;background:linear-gradient(90deg,var(--mint),var(--gold));border-radius:3px;animation:tick 1s linear infinite}
+  @keyframes tick{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .secbar.paused i{animation-play-state:paused}
+
+  .rates{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .rate-pill{
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+    padding:7px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.09);
+    background:rgba(255,255,255,.04);min-width:84px;
+  }
+  .rate-pill .k{font-size:10px;color:var(--muted);letter-spacing:.6px}
+  .rate-pill .v{font-size:14px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+  .rate-pill.mint .v{color:var(--mint)}
+
+  .controls{display:flex;gap:9px}
+  button.btn{
+    font:inherit;font-weight:800;font-size:14px;cursor:pointer;border:none;border-radius:14px;
+    padding:12px 16px;transition:transform .15s,filter .2s,box-shadow .2s;
+  }
+  button.btn:active{transform:scale(.97)}
+  .btn-main{
+    flex:1;color:#20180a;
+    background:linear-gradient(135deg,#ffe08a,#ffb020 55%,#ff9d00);
+    box-shadow:0 10px 26px -10px rgba(255,176,32,.85),inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .btn-main:hover{filter:brightness(1.06)}
+  .btn-ghost{
+    color:#cfd8e8;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);min-width:56px;
+  }
+  .btn-ghost:hover{background:rgba(255,255,255,.11);color:#fff}
+  .btn-ghost.on{color:var(--gold);border-color:rgba(255,209,102,.5);background:rgba(255,209,102,.12)}
+
+  /* ===== 今日進度 ===== */
+  .today{padding:15px;margin-bottom:14px}
+  .today-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;gap:10px}
+  .today-top h3{margin:0;font-size:12px;font-weight:700;color:#cfd8e8;letter-spacing:.4px}
+  .today-top .amt{font-size:14px;font-weight:800;color:var(--mint);font-variant-numeric:tabular-nums}
+  .today-top .amt small{color:var(--muted);font-weight:600;font-size:11px}
+  .bar{height:9px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;position:relative}
+  .bar > i{
+    display:block;height:100%;width:0%;border-radius:9px;
+    background:linear-gradient(90deg,#5eead4,#ffd166);transition:width .6s ease;
+    position:relative;overflow:hidden;
+  }
+  .bar > i::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:translateX(-100%);animation:sweep 2.2s ease-in-out infinite;
+  }
+  @keyframes sweep{60%,100%{transform:translateX(100%)}}
+  .today-foot{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  /* ===== 兌換 / 小卡 ===== */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+  .stat{padding:12px 10px;text-align:center}
+  .stat .emoji{font-size:19px;line-height:1.2;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
+  .stat .n{font-size:17px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums;margin-top:2px}
+  .stat .t{font-size:10px;color:var(--muted);margin-top:1px;letter-spacing:.3px}
+
+  .tip{
+    padding:14px 16px;margin-bottom:14px;text-align:center;
+    border-left:0;position:relative;overflow:hidden;
+  }
+  .tip p{margin:0;font-size:12.8px;line-height:1.7;color:#d6dff0}
+  .tip p b{color:var(--gold)}
+  .tip .tag{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:6px}
+  .fade{animation:fadeUp .6s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  footer{text-align:center;font-size:10.5px;color:#586379;line-height:1.8;padding-top:4px}
+  footer code{color:#7f8ca6;background:rgba(255,255,255,.05);padding:2px 6px;border-radius:5px;font-size:10px}
+
+  /* ===== Toast ===== */
+  #toastLayer{position:fixed;top:14px;left:0;right:0;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 14px}
+  .toast{
+    max-width:92%;padding:10px 16px;border-radius:14px;font-size:12.8px;font-weight:700;color:#1d1608;
+    background:linear-gradient(135deg,#ffe9a8,#ffc247);
+    box-shadow:0 14px 30px -12px rgba(255,176,32,.9);
+    animation:toastIn .4s cubic-bezier(.2,1.4,.4,1), toastOut .5s ease 2.6s forwards;
+  }
+  .toast.cool{background:linear-gradient(135deg,#b8ffe6,#5eead4);box-shadow:0 14px 30px -12px rgba(94,234,212,.8)}
+  @keyframes toastIn{from{opacity:0;transform:translateY(-16px) scale(.9)}to{opacity:1;transform:none}}
+  @keyframes toastOut{to{opacity:0;transform:translateY(-14px) scale(.96)}}
+
+  @media (max-width:360px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .rate-pill{min-width:72px;padding:6px 9px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .aurora span,.secbar i,.bar>i::after,.dot{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+
+<div class="app">
+  <header>
+    <h1>💰 每秒收入機</h1>
+    <p class="sub">你坐喺度，錢都喺度跳 — 呢一秒，你賺緊。</p>
+  </header>
+
+  <!-- 輸入 -->
+  <section class="card inputs">
+    <h2>你嘅資料</h2>
+    <div class="grid2">
+      <div class="field">
+        <label for="monthly">月薪</label>
+        <div class="inputwrap">
+          <span class="pre">$</span>
+          <input id="monthly" type="number" inputmode="numeric" min="0" step="500" value="18000">
+        </div>
+      </div>
+      <div class="field">
+        <label for="days">每月工作日數</label>
+        <div class="inputwrap">
+          <input id="days" type="number" inputmode="numeric" min="1" max="31" step="1" value="22">
+          <span class="post">日</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="hours">每日工時</label>
+        <div class="inputwrap">
+          <input id="hours" type="number" inputmode="decimal" min="0.5" max="24" step="0.5" value="8">
+          <span class="post">小時</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="start">返工時間</label>
+        <div class="inputwrap">
+          <input id="start" type="time" value="09:00">
+        </div>
+      </div>
+    </div>
+
+    <div class="chips" id="chipsDays" aria-label="快速選擇工作日數"></div>
+
+    <p class="hint">
+      每秒收入 = 月薪 ÷ (工作日 × 工時 × 3600 秒) ｜ 你每粒鐘值 <b id="hintHour">$102.3</b>
+      ｜ 收工時間 <b id="hintEnd">17:00</b>
+    </p>
+  </section>
+
+  <!-- 主角 -->
+  <section class="card hero">
+    <canvas id="fx"></canvas>
+    <div class="hero-in">
+      <div class="hero-label"><span class="dot" id="liveDot"></span><span id="statusText">即時計算中</span></div>
+
+      <div class="digits" id="digits" title="撳一下，金幣大爆發！">
+        <span class="cur">$</span><span class="int" id="intPart">0</span><span class="dec" id="decPart">.00</span><span class="dec2" id="decPart2">00</span>
+      </div>
+
+      <div class="secbar" id="secbar"><i></i></div>
+
+      <div class="rates">
+        <div class="rate-pill mint"><span class="k">每秒</span><span class="v" id="rateSec">$0.0284</span></div>
+        <div class="rate-pill"><span class="k">每分鐘</span><span class="v" id="rateMin">$1.70</span></div>
+        <div class="rate-pill"><span class="k">每小時</span><span class="v" id="rateHour">$102</span></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-main" id="toggleBtn">暫停一下</button>
+        <button class="btn btn-ghost" id="soundBtn" title="每秒滴答聲" aria-pressed="false">🔈</button>
+        <button class="btn btn-ghost" id="resetBtn" title="歸零">↺</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 今日進度 -->
+  <section class="card today">
+    <div class="today-top">
+      <h3 id="todayTitle">今日已經賺咗</h3>
+      <div class="amt"><span id="todayAmt">$0.00</span> <small>/ <span id="todayGoal">$818</span></small></div>
+    </div>
+    <div class="bar"><i id="todayBar"></i></div>
+    <div class="today-foot">
+      <span id="todayLeft">距離收工 8 小時</span>
+      <span id="todayPct">0%</span>
+    </div>
+  </section>
+
+  <!-- 兌換 -->
+  <div class="stats">
+    <div class="card stat"><div class="emoji">☕</div><div class="n" id="cCoffee">0</div><div class="t">杯咖啡</div></div>
+    <div class="card stat"><div class="emoji">🍱</div><div class="n" id="cLunch">0</div><div class="t">個飯盒</div></div>
+    <div class="card stat"><div class="emoji">🧋</div><div class="n" id="cTea">0</div><div class="t">杯珍奶</div></div>
+  </div>
+
+  <!-- 打氣 -->
+  <section class="card tip">
+    <span class="tag">心靈慰藉</span>
+    <p id="tipText">你每做一秒，戶口就多一分。唔使急，錢係一秒一秒咁儲返嚟嘅。</p>
+  </section>
+
+  <footer>
+    純粹娛樂同心靈支持 · 唔會上載任何資料，全部留喺你自己部機<br>
+    <code>每秒數字 × 60 = 每分鐘你嘅價值</code>
+  </footer>
+</div>
+
+<div id="toastLayer" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var clamp = function (v, a, b) { return Math.min(b, Math.max(a, v)); };
+  var num = new Intl.NumberFormat('en-US');
+
+  /* ---------- 狀態 ---------- */
+  var DEFAULT = { monthly: 18000, days: 22, hours: 8, start: '09:00' };
+  var st = { monthly: DEFAULT.monthly, days: DEFAULT.days, hours: DEFAULT.hours, start: DEFAULT.start };
+
+  var running = true;
+  var total = 0;            // 本次累計
+  var lastTs = 0;
+  var lastWholeSecond = -1;
+  var spawnAcc = 0;
+  var particleList = [];
+  var nextMilestone = 0;
+  var soundOn = false;
+  var audioCtx = null;
+
+  /* ---------- 讀取／儲存設定（sandbox 內可能被封鎖） ---------- */
+  function loadSettings() {
+    try {
+      var raw = localStorage.getItem('sekkoku-settings');
+      if (!raw) return;
+      var o = JSON.parse(raw);
+      if (o && typeof o === 'object') {
+        if (isFinite(o.monthly) && o.monthly > 0) st.monthly = o.monthly;
+        if (isFinite(o.days) && o.days > 0) st.days = clamp(o.days, 1, 31);
+        if (isFinite(o.hours) && o.hours > 0) st.hours = clamp(o.hours, 0.5, 24);
+        if (typeof o.start === 'string' && /^\d{1,2}:\d{2}$/.test(o.start)) st.start = o.start;
+      }
+    } catch (e) { /* ignore */ }
+  }
+  function saveSettings() {
+    try { localStorage.setItem('sekkoku-settings', JSON.stringify(st)); } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- 計算 ---------- */
+  function perSecond() {
+    var denom = st.days * st.hours * 3600;
+    if (!(denom > 0)) return 0;
+    return st.monthly / denom;
+  }
+  function perDay() { return perSecond() * st.hours * 3600; }
+
+  function money(v, dp) {
+    var fixed = Number(v).toFixed(dp === undefined ? 2 : dp);
+    var parts = fixed.split('.');
+    parts[0] = num.format(parseInt(parts[0], 10) || 0);
+    return parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
+  }
+
+  function parseHM(s) {
+    var m = /^(\d{1,2}):(\d{2})$/.exec(s || '');
+    if (!m) return 9 * 60;
+    return clamp(parseInt(m[1], 10), 0, 23) * 60 + clamp(parseInt(m[2], 10), 0, 59);
+  }
+  function endClock() {
+    var startMin = parseHM(st.start);
+    var endMin = (startMin + Math.round(st.hours * 60)) % (24 * 60);
+    var hh = Math.floor(endMin / 60), mm = endMin % 60;
+    return (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+  }
+
+  /* 今日（按真實時鐘）進度 */
+  function todayInfo() {
+    var now = new Date();
+    var nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+    var startMin = parseHM(st.start);
+    var durMin = st.hours * 60;
+    var elapsed;
+    var endMin = (startMin + durMin) % (24 * 60);
+    var wrapped = startMin + durMin > 24 * 60;
+
+    if (!wrapped) {
+      elapsed = clamp(nowMin - startMin, 0, durMin);
+    } else {
+      // 跨夜更
+      if (nowMin >= startMin) elapsed = clamp(nowMin - startMin, 0, durMin);
+      else if (nowMin <= endMin) elapsed = clamp((24 * 60 - startMin) + nowMin, 0, durMin);
+      else elapsed = 0;
+    }
+    var phase = elapsed <= 0 ? 'before' : (elapsed >= durMin ? 'after' : 'during');
+    return {
+      phase: phase,
+      elapsedMin: elapsed,
+      durMin: durMin,
+      remainingMin: Math.max(0, durMin - elapsed),
+      earned: perSecond() * elapsed * 60,
+      pct: durMin > 0 ? clamp(elapsed / durMin, 0, 1) : 0
+    };
+  }
+
+  /* ---------- 音效 ---------- */
+  function tickSound() {
+    if (!soundOn) return;
+    try {
+      if (!audioCtx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        audioCtx = new AC();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var t = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1180, t);
+      osc.frequency.exponentialRampToValueAtTime(760, t + 0.06);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.06, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+      osc.connect(g).connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.1);
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- Canvas 粒子 ---------- */
+  var cvs = $('fx');
+  var ctx = cvs.getContext('2d');
+  var W = 0, H = 0, DPR = 1;
+
+  function resizeCanvas() {
+    var rect = cvs.getBoundingClientRect();
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = Math.max(1, rect.width);
+    H = Math.max(1, rect.height);
+    cvs.width = Math.round(W * DPR);
+    cvs.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function addCoin(opts) {
+    opts = opts || {};
+    particleList.push({
+      kind: 'coin',
+      x: opts.x !== undefined ? opts.x : 18 + Math.random() * Math.max(1, W - 36),
+      y: opts.y !== undefined ? opts.y : H + 18,
+      vx: (Math.random() - 0.5) * 46,
+      vy: -(58 + Math.random() * 72),
+      r: 8 + Math.random() * 7,
+      spin: Math.random() * Math.PI * 2,
+      spinV: 2.4 + Math.random() * 3.2,
+      t: 0,
+      ttl: 1.9 + Math.random() * 1.1
+    });
+  }
+
+  function addText(str, x, y) {
+    particleList.push({
+      kind: 'text',
+      text: str,
+      x: x !== undefined ? x : 26 + Math.random() * Math.max(1, W - 70),
+      y: y !== undefined ? y : H * 0.62 + Math.random() * H * 0.28,
+      vx: (Math.random() - 0.5) * 22,
+      vy: -34 - Math.random() * 26,
+      t: 0,
+      ttl: 1.5 + Math.random() * 0.5,
+      size: 11 + Math.random() * 4
+    });
+  }
+
+  function addConfetti(cx, cy) {
+    for (var i = 0; i < 34; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var sp = 40 + Math.random() * 150;
+      particleList.push({
+        kind: 'confetti',
+        x: cx, y: cy,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 60,
+        t: 0,
+        ttl: 1.1 + Math.random() * 0.7,
+        w: 3 + Math.random() * 4,
+        h: 6 + Math.random() * 7,
+        rot: Math.random() * Math.PI,
+        rotV: (Math.random() - 0.5) * 14,
+        hue: Math.random() < 0.6 ? 45 : (Math.random() < 0.5 ? 165 : 330)
+      });
+    }
+  }
+
+  function updateParticles(dt) {
+    for (var i = particleList.length - 1; i >= 0; i--) {
+      var p = particleList[i];
+      p.t += dt;
+      if (p.t >= p.ttl) { particleList.splice(i, 1); continue; }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (p.kind === 'coin') {
+        p.vy += 26 * dt;          // 慢慢減速上升
+        p.spin += p.spinV * dt;
+      } else if (p.kind === 'confetti') {
+        p.vy += 190 * dt;
+        p.vx *= 0.985;
+        p.rot += p.rotV * dt;
+      } else {
+        p.vy *= 0.995;
+      }
+    }
+    if (particleList.length > 260) particleList.splice(0, particleList.length - 260);
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < particleList.length; i++) {
+      var p = particleList[i];
+      var life = p.t / p.ttl;
+      var alpha = life < 0.14 ? life / 0.14 : (1 - life) / 0.86;
+      alpha = clamp(alpha, 0, 1);
+
+      if (p.kind === 'coin') {
+        var sx = Math.abs(Math.cos(p.spin));
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.95;
+        ctx.translate(p.x, p.y);
+        ctx.scale(Math.max(0.18, sx), 1);
+        var grd = ctx.createRadialGradient(-p.r * 0.3, -p.r * 0.35, p.r * 0.15, 0, 0, p.r);
+        grd.addColorStop(0, '#fff3c4');
+        grd.addColorStop(0.45, '#ffd166');
+        grd.addColorStop(1, '#d98a00');
+        ctx.beginPath();
+        ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.shadowColor = 'rgba(255,193,71,.75)';
+        ctx.shadowBlur = 14;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(120,72,0,.85)';
+        ctx.font = '700 ' + Math.round(p.r * 1.15) + 'px -apple-system,system-ui,sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('$', 0, 0.5);
+        ctx.restore();
+      } else if (p.kind === 'text') {
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.9;
+        ctx.fillStyle = '#7ef0c4';
+        ctx.font = '700 ' + Math.round(p.size) + 'px ui-monospace,SFMono-Regular,Menlo,monospace';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(126,240,196,.6)';
+        ctx.shadowBlur = 10;
+        ctx.fillText(p.text, p.x, p.y);
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = 'hsl(' + p.hue + ',95%,62%)';
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+    }
+  }
+
+  /* ---------- Toast ---------- */
+  var toastLayer = $('toastLayer');
+  function toast(msg, cool) {
+    var d = document.createElement('div');
+    d.className = 'toast' + (cool ? ' cool' : '');
+    d.textContent = msg;
+    toastLayer.appendChild(d);
+    setTimeout(function () {
+      if (d.parentNode) d.parentNode.removeChild(d);
+    }, 3200);
+  }
+
+  /* ---------- 打氣句子 ---------- */
+  var TIPS = [
+    '你每做一秒，戶口就多一分。唔使急，錢係一秒一秒咁儲返嚟嘅。',
+    '成日覺得自己冇價值？睇下上面個數字 — 你每一秒都喺度創造緊嘢。',
+    '辛苦唔係因為你唔夠好，只係因為你仲喺路上。飲啖水，繼續。',
+    '呢筆錢，唔止係人工，係你嘅時間同耐性換返嚟嘅。',
+    '做嘢做得悶嘅時候，望下個數字跳一下，當自己喺度打機儲金幣。',
+    '冇人一開始就係老細。你今日賺嘅每一蚊，都係將來嘅本錢。',
+    '就算今日做得好慢，時間都幫你賺錢。你冇停過。',
+    '你唔係「只係打份工」，你係用時間換你同家人嘅生活。好值得。',
+    '深呼吸。呢一秒你賺咗錢，下一秒都會。',
+    '唔需要同人比較，你嘅節奏就係你嘅節奏。'
+  ];
+  var tipEl = $('tipText');
+  var tipIdx = 0;
+  function nextTip() {
+    tipIdx = (tipIdx + 1) % TIPS.length;
+    tipEl.classList.remove('fade');
+    void tipEl.offsetWidth;
+    tipEl.textContent = TIPS[tipIdx];
+    tipEl.classList.add('fade');
+  }
+  setInterval(nextTip, 11000);
+
+  /* ---------- 畫面更新 ---------- */
+  var els = {
+    monthly: $('monthly'), days: $('days'), hours: $('hours'), start: $('start'),
+    intPart: $('intPart'), decPart: $('decPart'), decPart2: $('decPart2'),
+    digits: $('digits'), rateSec: $('rateSec'), rateMin: $('rateMin'), rateHour: $('rateHour'),
+    todayAmt: $('todayAmt'), todayGoal: $('todayGoal'), todayBar: $('todayBar'),
+    todayLeft: $('todayLeft'), todayPct: $('todayPct'), todayTitle: $('todayTitle'),
+    hintHour: $('hintHour'), hintEnd: $('hintEnd'),
+    cCoffee: $('cCoffee'), cLunch: $('cLunch'), cTea: $('cTea'),
+    toggleBtn: $('toggleBtn'), soundBtn: $('soundBtn'), resetBtn: $('resetBtn'),
+    statusText: $('statusText'), liveDot: $('liveDot'), secbar: $('secbar')
+  };
+
+  function renderRates() {
+    var ps = perSecond();
+    els.rateSec.textContent = '$' + ps.toFixed(ps < 1 ? 4 : 2);
+    els.rateMin.textContent = '$' + money(ps * 60, 2);
+    els.rateHour.textContent = '$' + money(ps * 3600, 0);
+    els.todayGoal.textContent = '$' + money(perDay(), 0);
+    els.hintHour.textContent = '$' + money(ps * 3600, 1);
+    els.hintEnd.textContent = endClock();
+  }
+
+  function renderTotal() {
+    var fixed = Math.max(0, total).toFixed(4);
+    var parts = fixed.split('.');
+    els.intPart.textContent = num.format(parseInt(parts[0], 10) || 0);
+    els.decPart.textContent = '.' + parts[1].slice(0, 2);
+    els.decPart2.textContent = parts[1].slice(2, 4);
+
+    els.cCoffee.textContent = Math.floor(total / 45);
+    els.cLunch.textContent = Math.floor(total / 60);
+    els.cTea.textContent = Math.floor(total / 30);
+  }
+
+  function renderToday() {
+    var info = todayInfo();
+    els.todayAmt.textContent = '$' + money(info.earned, 2);
+    els.todayBar.style.width = (info.pct * 100).toFixed(2) + '%';
+    els.todayPct.textContent = Math.floor(info.pct * 100) + '%';
+
+    var rem = info.remainingMin;
+    var rh = Math.floor(rem / 60), rm = Math.round(rem % 60);
+    if (info.phase === 'before') {
+      els.todayTitle.textContent = '未開工，今日將會賺';
+      els.todayLeft.textContent = '仲有 ' + (rh > 0 ? rh + ' 小時 ' : '') + rm + ' 分鐘先開工';
+    } else if (info.phase === 'after') {
+      els.todayTitle.textContent = '今日收工，總共賺咗';
+      els.todayLeft.textContent = '辛苦晒！今日已完成 ✓';
+    } else {
+      els.todayTitle.textContent = '今日已經賺咗';
+      els.todayLeft.textContent = '距離收工 ' + (rh > 0 ? rh + ' 小時 ' : '') + rm + ' 分鐘';
+    }
+  }
+
+  /* ---------- 主循環 ---------- */
+  var todayAcc = 0;
+  function frame(ts) {
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.25, (ts - lastTs) / 1000);
+    lastTs = ts;
+
+    if (running && dt > 0) {
+      var ps = perSecond();
+      total += ps * dt;
+
+      // 每秒心跳
+      var whole = Math.floor(total);
+      if (whole !== lastWholeSecond) {
+        lastWholeSecond = whole;
+        els.digits.classList.remove('beat');
+        void els.digits.offsetWidth;
+        els.digits.classList.add('beat');
+        tickSound();
+      }
+
+      // 氣泡 + 金幣
+      spawnAcc += dt * 1000;
+      var gap = ps > 0.5 ? 260 : (ps > 0.1 ? 430 : 620);
+      if (spawnAcc >= gap) {
+        spawnAcc = 0;
+        if (ps > 0) addText('+$' + (ps * (gap / 1000)).toFixed(4));
+        if (Math.random() < 0.85) addCoin();
+      }
+
+      // 里程碑
+      var step = ps < 0.05 ? 5 : (ps < 0.2 ? 20 : (ps < 1 ? 50 : 200));
+      if (nextMilestone === 0) nextMilestone = step;
+      while (total >= nextMilestone) {
+        var msg = pickMilestone(nextMilestone);
+        toast(msg, false);
+        addConfetti(W / 2, H * 0.55);
+        nextMilestone += step;
+      }
+    }
+
+    renderTotal();
+    todayAcc += dt;
+    if (todayAcc > 0.25) { todayAcc = 0; renderToday(); }
+    updateParticles(dt);
+    drawParticles();
+    requestAnimationFrame(frame);
+  }
+
+  var MILESTONES = [
+    '已經賺咗 %s，繼續跳！',
+    '%s 入袋 ✅ 你愈嚟愈值錢',
+    '又 %s，抵你嘅努力 🎉',
+    '%s — 夠買杯凍檸茶喇 🧋',
+    '累計 %s，慢慢積少成多 💪',
+    '恭喜，%s 已經係你嘅。'
+  ];
+  function pickMilestone(amt) {
+    var s = '$' + num.format(amt);
+    return MILESTONES[Math.floor(Math.random() * MILESTONES.length)].replace('%s', s);
+  }
+
+  /* ---------- 控制 ---------- */
+  function setRunning(on) {
+    running = on;
+    els.toggleBtn.textContent = on ? '暫停一下' : '繼續賺錢';
+    els.statusText.textContent = on ? '即時計算中' : '已暫停';
+    els.liveDot.classList.toggle('paused', !on);
+    els.secbar.classList.toggle('paused', !on);
+    els.toggleBtn.style.filter = on ? '' : 'grayscale(.35) brightness(.9)';
+  }
+
+  els.toggleBtn.addEventListener('click', function () {
+    setRunning(!running);
+    if (!running) toast('休息都好重要，數字幫你留住 🛋️', true);
+  });
+
+  els.resetBtn.addEventListener('click', function () {
+    total = 0;
+    lastWholeSecond = -1;
+    nextMilestone = 0;
+    renderTotal();
+    toast('歸零，重新出發 ✨', true);
+  });
+
+  els.soundBtn.addEventListener('click', function () {
+    soundOn = !soundOn;
+    els.soundBtn.textContent = soundOn ? '🔊' : '🔈';
+    els.soundBtn.classList.toggle('on', soundOn);
+    els.soundBtn.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+    if (soundOn) { tickSound(); toast('每秒滴答聲已開啟 🔔', true); }
+  });
+
+  // 撳大數字 → 金幣爆發
+  els.digits.addEventListener('click', function () {
+    for (var i = 0; i < 16; i++) addCoin({ x: W / 2 + (Math.random() - 0.5) * W * 0.7, y: H * 0.72 });
+    addConfetti(W / 2, H * 0.6);
+    if (perSecond() > 0) addText('+$' + (perSecond() * 1).toFixed(4), W / 2, H * 0.45);
+    tickSound();
+  });
+
+  /* ---------- 輸入綁定 ---------- */
+  function readInputs() {
+    var m = parseFloat(els.monthly.value);
+    var d = parseFloat(els.days.value);
+    var h = parseFloat(els.hours.value);
+    var s = els.start.value;
+
+    st.monthly = isFinite(m) && m > 0 ? m : 0;
+    st.days = isFinite(d) && d > 0 ? clamp(d, 1, 31) : 1;
+    st.hours = isFinite(h) && h > 0 ? clamp(h, 0.5, 24) : 1;
+    if (/^\d{1,2}:\d{2}$/.test(s)) st.start = s;
+
+    renderRates();
+    renderToday();
+    saveSettings();
+  }
+
+  ['monthly', 'days', 'hours', 'start'].forEach(function (k) {
+    els[k].addEventListener('input', readInputs);
+    els[k].addEventListener('change', readInputs);
+  });
+
+  // 快捷 chips
+  var CHIPS = [
+    { t: '工作日 20 日', apply: function () { els.days.value = 20; } },
+    { t: '22 日（五天工作）', apply: function () { els.days.value = 22; } },
+    { t: '26 日（長週）', apply: function () { els.days.value = 26; } },
+    { t: '工時 8 小時', apply: function () { els.hours.value = 8; } },
+    { t: '9 小時', apply: function () { els.hours.value = 9; } },
+    { t: '12 小時', apply: function () { els.hours.value = 12; } },
+    { t: '朝九晚六', apply: function () { els.start.value = '09:00'; els.hours.value = 9; } }
+  ];
+  var chipsBox = $('chipsDays');
+  CHIPS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = c.t;
+    b.addEventListener('click', function () {
+      c.apply();
+      readInputs();
+    });
+    chipsBox.appendChild(b);
+  });
+
+  // 每分鐘更新一次「今日進度」（時鐘會走）
+  setInterval(function () { renderRates(); renderToday(); }, 15000);
+
+  // resize
+  var rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(resizeCanvas, 120);
+  });
+
+  /* ---------- 初始化 ---------- */
+  loadSettings();
+  els.monthly.value = st.monthly;
+  els.days.value = st.days;
+  els.hours.value = st.hours;
+  els.start.value = st.start;
+
+  resizeCanvas();
+  renderRates();
+  renderTotal();
+  renderToday();
+  setRunning(true);
+
+  // 開場小驚喜
+  setTimeout(function () {
+    for (var i = 0; i < 14; i++) addCoin({ y: H + 20 });
+    toast('開始計啦，你每一秒都值錢 ✨', false);
+  }, 450);
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
